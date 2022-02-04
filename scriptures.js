@@ -40,12 +40,12 @@ const Scriptures = (function () {
     };
 
     cacheBooks = function (callback){
-        volumes.forEach(volume => {
+        volumes.forEach(function (volume) {
             let volumeBooks = [];
             let bookId = volume.minBookId;
 
             while (bookId <= volume.maxBookId){
-                volumeBooks.push(books(bookId));
+                volumeBooks.push(books[bookId]);
                 bookId += 1;
             }
 
