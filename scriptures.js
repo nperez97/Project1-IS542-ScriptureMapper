@@ -24,12 +24,15 @@ const Scriptures = (function () {
 
     //-------------------------PRIVATE METHOD DECLARATIONS---------------------------------
     let ajax;
+    let bookChapterValid;
     let cacheBooks;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
     let htmlLink;
     let htmlHashLink;
+    let navigateBook;
+    let navigateChapter;
     let navigateHome;
     let init;
     let onHashChanged;
@@ -58,6 +61,20 @@ const Scriptures = (function () {
         request.onerror = failureCallback;
 
         request.send();
+    };
+
+    bookChapterValid = function (bookId, chapter){
+        let book = books[bookId];
+
+        if (book === undefined || chapter < 0 || chapter > book.numChapters) {
+            return false;
+        }
+
+        if (chapter === 0 || book.numChapters > 0){
+            return false;
+        }
+
+        return true;
     };
 
     cacheBooks = function (callback){
@@ -164,6 +181,14 @@ const Scriptures = (function () {
         );
     };
 
+    navigateBook = function (bookId) {
+        console.log("navigateBook" + bookId);
+    };
+
+    navigateChapter = function (bookId, chapter) {
+        console.log("navigateChapter" + bookId + ", " + chapter);
+    };
+
     navigateHome = function (volumeId) {
         document.getElementById(DIV_SCRIPTURES).innerHTML = 
         "<div>Old Testament</div>" +
@@ -171,7 +196,7 @@ const Scriptures = (function () {
         "<div>Book of Mormon</div>" +
         "<div>Doctrine and Covenants</div>" +
         "<div>Pearl of Great Price</div>" + volumeId;
-    }
+    };
 
     onHashChanged = function () {
         let ids = [];
@@ -189,6 +214,24 @@ const Scriptures = (function () {
                 navigateHome();
             } else {
                 navigateHome(volumeId);
+            }
+        } else {
+            let bookId = Number(ids[1]);
+
+            if (books[bookId] === undefined) {
+                navigateHome();
+            } else {
+                if (ids.length === 2){
+                    navigateBook(bookId);
+                } else{
+                    let chapter = Number(ids[2]);
+
+                    if(bookChapterValid(bookId, chapter)){
+                        navigateChapter(bookId, chapter);
+                    } else {
+                        navigateHome();
+                    }
+                }
             }
         }
     };
