@@ -2,6 +2,13 @@ const Scriptures = (function () {
     "use strict";
 
     //---------------------------------CONSTANTS---------------------------------
+    const REQUEST_GET = "GET";
+    const CLASS_BOOKS = "books";
+    const CLASS_VOLUME = "volume";
+    const REQUEST_STATUS_OK = 200;
+    const REQUEST_STATUS_ERROR = 400;
+
+
 
     //---------------------------------PRIVATE VARIABLES---------------------------------
     let books;
@@ -13,14 +20,15 @@ const Scriptures = (function () {
     let cacheBooks;
     let init;
     let testGeoplaces;
+    let onHashChanged;
 
     //---------------------------------PRIVATE METHODS---------------------------------
     ajax = function (url, successCallback, failureCallback) {
         let request = new XMLHttpRequest();
-        request.open('GET', url, true);
+        request.open(REQUEST_GET, url, true);
 
         request.onload = function() {
-            if (this.status >= 200 && this.status < 400) {
+            if (this.status >= REQUEST_STATUS_OK && this.status < REQUEST_STATUS_ERROR) {
                 // Success!
                 let data = JSON.parse(this.response);
 
@@ -83,6 +91,11 @@ const Scriptures = (function () {
         );
     };
 
+    onHashChanged = function () {
+        console.log(window.location.hash)
+    }
+
+
     testGeoplaces = function () {
 
         const similar = function (number1, number2) {
@@ -139,6 +152,7 @@ const Scriptures = (function () {
 
     return {
         init,
-        testGeoplaces
+        testGeoplaces,
+        onHashChanged,
     };
 }());
