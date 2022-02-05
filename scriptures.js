@@ -247,7 +247,8 @@ const Scriptures = (function () {
             navigateChapter(bookId, book.numChapters);
         } else {
             document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
-                
+                id: DIV_SCRIPTURES_NAVIGATOR,
+                content: chaptersGrid(book)
             })
         }
     };
