@@ -2,7 +2,7 @@ const Scriptures = (function () {
     "use strict";
 
     //---------------------------------CONSTANTS---------------------------------
-    
+    const BOTTOM_PADDING = "<br /><br />"
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
@@ -15,6 +15,7 @@ const Scriptures = (function () {
     const TAG_HEADER5 = "h5";
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
+    const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
 
 
@@ -33,6 +34,9 @@ const Scriptures = (function () {
     let chaptersGrid;
     let chaptersGridContent;
     let cacheBooks;
+    let encodedScripturesUrlParameters;
+    let getScripturesCallback;
+    let getScripturesFailure;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
@@ -47,14 +51,18 @@ const Scriptures = (function () {
     let volumesGridContent;
 
     //---------------------------------PRIVATE METHODS---------------------------------
-    ajax = function (url, successCallback, failureCallback) {
+    ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
         request.open(REQUEST_GET, url, true);
 
         request.onload = function() {
             if (this.status >= REQUEST_STATUS_OK && this.status < REQUEST_STATUS_ERROR) {
                 // Success!
-                let data = JSON.parse(this.response);
+                let data = (
+                    skipJsonParse
+                    ? this.response
+                    : JSON.parse(this.response)
+                );
 
                 if (typeof successCallback === "function") {
                     successCallback(data);
@@ -152,6 +160,32 @@ const Scriptures = (function () {
         if (typeof callback === "function"){
             callback();
         }
+    };
+
+    encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst){
+        if (bookId !== undefined && chpater !== undefined){
+            let options = "";
+
+            if (verses !== undefined) {
+                options += verse
+            }
+
+            if (isJst !== undefined) {
+                options += "&jst=JST";
+            }
+
+            return `${URL_SCRIPTURES}?book=${bookId}&chap=${chapter}&verses${options}`;
+        }
+    };
+
+    getScripturesCallback = function (){
+        document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+
+        // SET UP MARKERS
+    };
+
+    getScripturesFailure = function (){
+        console.log("can't connect to server")
     };
 
     htmlAnchor = function (volume) {
@@ -254,7 +288,7 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function (bookId, chapter) {
-        console.log("navigateChapter" + bookId + ", " + chapter);
+        ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure);
     };
 
     navigateHome = function (volumeId) {
@@ -368,7 +402,7 @@ const Scriptures = (function () {
                 gridContent += booksGrid(volume);
             }
         });
-        return gridContent;
+        return gridContent + BOTTOM_PADDING;
     };
 
     //---------------------------------PUBLIC API---------------------------------
