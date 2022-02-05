@@ -42,26 +42,30 @@ const Scriptures = (function () {
     let htmlElement;
     let htmlLink;
     let htmlHashLink;
+    let init;
     let navigateBook;
     let navigateChapter;
     let navigateHome;
-    let init;
+    let nextChapter;
     let onHashChanged;
+    let previousChapter;
+    let titleForBookChapter;
     let testGeoplaces;
     let volumesGridContent;
 
     //---------------------------------PRIVATE METHODS---------------------------------
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
+
         request.open(REQUEST_GET, url, true);
 
         request.onload = function() {
-            if (this.status >= REQUEST_STATUS_OK && this.status < REQUEST_STATUS_ERROR) {
+            if (request.status >= REQUEST_STATUS_OK && request.status < REQUEST_STATUS_ERROR) {
                 // Success!
                 let data = (
                     skipJsonParse
-                    ? this.response
-                    : JSON.parse(this.response)
+                    ? request.response
+                    : JSON.parse(request.response)
                 );
 
                 if (typeof successCallback === "function") {
@@ -149,7 +153,7 @@ const Scriptures = (function () {
             let volumeBooks = [];
             let bookId = volume.minBookId;
 
-            while (bookId <= volume.maxBookId){
+            while (bookId <= volume.maxBookId) {
                 volumeBooks.push(books[bookId]);
                 bookId += 1;
             }
@@ -163,11 +167,11 @@ const Scriptures = (function () {
     };
 
     encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst){
-        if (bookId !== undefined && chpater !== undefined){
+        if (bookId !== undefined && chapter !== undefined){
             let options = "";
 
             if (verses !== undefined) {
-                options += verse
+                options += verse;
             }
 
             if (isJst !== undefined) {
@@ -288,7 +292,8 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function (bookId, chapter) {
-        ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure);
+        //console.log("Navigate chpater " + bookId, ", " + chapter)
+        ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
     navigateHome = function (volumeId) {
@@ -296,6 +301,35 @@ const Scriptures = (function () {
             id: DIV_SCRIPTURES_NAVIGATOR,
             content: volumesGridContent(volumeId)
         });
+    };
+
+    nextChapter = function(book, chapter) {
+        let book = book[bookId];
+
+        if (chapter < book.numChapters) {
+            return [
+                book,
+                chapter + 1,
+                titleForBookChapter(book, chapter + 1)
+            ];
+        }
+
+        let nextBook = books[bookId + 1];
+
+
+        if (nextBook !== undefined) {
+            let nextChapterValue = 0;
+
+            if (nextBook.numChapters > 0) {
+                nextChapterValue = 1;
+            }
+
+            return [
+                nextBook.id,
+                nextChapterValue,
+                titleForBookChapter(nextBook, nextChapterValue)
+            ];
+        }
     };
 
     onHashChanged = function () {
@@ -388,6 +422,17 @@ const Scriptures = (function () {
 
         makeUniqueGeoPlaces(geoplaces);
     }
+
+    titleForBookChapter = function (book, chapter) {
+
+        if (book !== undefined) {
+            if (chapter > 0) {
+                return `${book.tocName} ${chapter}`;
+            }
+        }
+
+        return book.tocName;
+    };
 
     volumesGridContent = function (volumeId) {
         let gridContent = "";
