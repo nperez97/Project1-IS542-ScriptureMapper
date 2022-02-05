@@ -15,7 +15,9 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="apple-touch-icon" href="icon.png">
 
-
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlcvOj-1T67gF17fMGCIOsYqCAWH12Z7w&callback=initMap">
+  </script>
   <script src="scriptures.js"></script>
 </head>
 
@@ -34,6 +36,16 @@
   </div>
 
   <script type="text/javascript">
+    
+    let map;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 31.7683, lng: 35.2137 },
+          zoom: 8,
+      });
+    }
+
     function ready(readyListener){
       if (document.readyState !== "loading") {
         readyListener();

@@ -10,6 +10,11 @@ const Scriptures = (function () {
     const DIV_BREADCRUMBS = "crumbs";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
+    const INDEX_FLAG = 11;
+    const INDEX_LATITUDE = 3;
+    const INDEX_LONGITUDE = 4;
+    const INDEX_PLACENAME = 2;
+    const LAT_LON_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
@@ -24,17 +29,21 @@ const Scriptures = (function () {
 
     //---------------------------------PRIVATE VARIABLES---------------------------------
     let books;
+    let gmLabels = [];
+    let gmMarkers = [];
     let volumes;
 
 
     //-------------------------PRIVATE METHOD DECLARATIONS---------------------------------
+    let addMarker;
     let ajax;
     let bookChapterValid;
     let booksGrid;
     let booksGridContent;
+    let cacheBooks;
     let chaptersGrid;
     let chaptersGridContent;
-    let cacheBooks;
+    let clearMarkers;
     let encodedScripturesUrlParameters;
     let getScripturesCallback;
     let getScripturesFailure;
@@ -50,11 +59,50 @@ const Scriptures = (function () {
     let nextChapter;
     let onHashChanged;
     let previousChapter;
+    let setupMarkers;
     let titleForBookChapter;
     let testGeoplaces;
     let volumesGridContent;
 
     //---------------------------------PRIVATE METHODS---------------------------------
+    
+    addMarker = function (placename, latitude, longitude) {
+        let index = markerIndex(latitude, longitude);
+
+        if (index >= 0) {
+            mergePlacename(placename, index);
+        } else {
+            let marker = new google.maps.Marker({
+                position: {lat: Number(latitude), lng: Number(longitude)},
+                map,
+                title: placename,
+                animation: google.maps.Animation.DROP
+            });
+
+            gmMarkers.push(marker);
+
+            if (!initializedMapLabel) {
+                const initialize = MapLabelInit;
+
+                initialize();
+                initializedMapLabel = true;
+            }
+
+            let mapLabel = new MapLabel({
+                text: marker.getTitle(),
+                position: new google.maps.LatLng(Number(latitude), Number(longitude)),
+                map,
+                fontSize: 16,
+                fontColor: "#201000",
+                strokeColor: "#fff8f0",
+                align: "left"
+            });
+
+            gmLabels.push(mapLabel);
+        }
+    };
+    // ----------------------
+    
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
 
@@ -165,6 +213,14 @@ const Scriptures = (function () {
         }
 
         return gridContent;
+    };
+
+    clearMarkers = function () {
+        gmMarkers.forEach(function (marker) {
+            marker.setMap(null); //removes marker from map
+        });
+
+        gmMarkers = [];
     };
 
     encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst) {
@@ -432,6 +488,33 @@ const Scriptures = (function () {
 
         makeUniqueGeoPlaces(geoplaces);
     }
+
+    setupMarkers = function () {
+        if (gmMarkers.length > 0) {
+            clearMarkers();
+        }
+
+        let matches;
+
+        document.querySelectorAll("a[onclick^=\"showLocation(\"]").forEach(function (element) {
+            matches = LAT_LON_PARSER.exec(element.getAttribute("onclick"));
+
+            if (matches) {
+                let placename = matches[INDEX_PLACENAME];
+                let latitude = parseFloat(matches[INDEX_LATITUDE]);
+                let longitude = parseFloat(matches[INDEX_LONGITUDE]);
+                let flag = matches[INDEX_FLAG];
+
+                if (flag !== "") {
+                    placename = `${placename} ${flag}`;
+                }
+
+                addMarker(placename, latitude, longitude);
+            }
+        });
+
+        zoomMapToFitMarkers(matches);
+    };
 
     titleForBookChapter = function (book, chapter) {
 
