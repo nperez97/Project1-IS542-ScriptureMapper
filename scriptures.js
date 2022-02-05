@@ -60,6 +60,7 @@ const Scriptures = (function () {
     let onHashChanged;
     let previousChapter;
     let setupMarkers;
+    let showLocation;
     let titleForBookChapter;
     let testGeoplaces;
     let volumesGridContent;
@@ -239,10 +240,17 @@ const Scriptures = (function () {
         }
     };
 
-    getScripturesCallback = function (chapterHtml){
+    getScripturesCallback = function (chapterHtml) {
+        let book = books[requestedBookId];
+
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
 
-        // SET UP MARKERS
+        document.querySelectorAll(".navheading").forEach(function (element) {
+            element.innerHTML += `<div class="nextprev">${requestedNextPrevious}</div>`;
+        });
+
+        injectBreadcrumbs(volumeForId(book.parentBookId), book, requestedChapter);
+        setupMarkers();
     };
 
     getScripturesFailure = function (){
@@ -516,6 +524,12 @@ const Scriptures = (function () {
         zoomMapToFitMarkers(matches);
     };
 
+    showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
+        console.log(id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewHeading);
+        map.panTo({lat: latitude, lng: longitude});
+        map.setZoom(Math.round(viewAltitude / ZOOM_RATIO));
+    };
+
     titleForBookChapter = function (book, chapter) {
 
         if (book !== undefined) {
@@ -548,7 +562,8 @@ const Scriptures = (function () {
 
     return {
         init,
-        testGeoplaces,
-        onHashChanged
+        onHashChanged,
+        showLocation,
+        testGeoplaces
     };
 }());
