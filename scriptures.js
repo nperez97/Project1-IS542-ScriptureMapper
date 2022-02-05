@@ -84,14 +84,14 @@ const Scriptures = (function () {
         request.send();
     };
 
-    bookChapterValid = function (bookId, chapter){
+    bookChapterValid = function (bookId, chapter) {
         let book = books[bookId];
 
         if (book === undefined || chapter < 0 || chapter > book.numChapters) {
             return false;
         }
 
-        if (chapter === 0 || book.numChapters > 0){
+        if (chapter === 0 && book.numChapters > 0) {
             return false;
         }
 
@@ -149,7 +149,7 @@ const Scriptures = (function () {
     };
 
     // FIX --- not showing grid buttons
-    chaptersGridContent = function(book) {
+    chaptersGridContent = function (book) {
         let gridContent = "";
         let chapter = 1;
 
@@ -167,12 +167,12 @@ const Scriptures = (function () {
         return gridContent;
     };
 
-    encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst){
-        if (bookId !== undefined && chapter !== undefined){
+    encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst) {
+        if (bookId !== undefined && chapter !== undefined) {
             let options = "";
 
             if (verses !== undefined) {
-                options += verse;
+                options += verses;
             }
 
             if (isJst !== undefined) {
@@ -183,7 +183,7 @@ const Scriptures = (function () {
         }
     };
 
-    getScripturesCallback = function (){
+    getScripturesCallback = function (chapterHtml){
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
 
         // SET UP MARKERS
@@ -194,7 +194,7 @@ const Scriptures = (function () {
     };
 
     htmlAnchor = function (volume) {
-        return `<a name="v${volume.id}"><a/>`;
+        return `<a name="v${volume.id}"></a>`;
     };
     
     
@@ -283,7 +283,7 @@ const Scriptures = (function () {
                 volumes = data;
                 volumesLoaded = true;
 
-                if (volumesLoaded){
+                if (booksLoaded){
                     cacheBooks(callback);
                 }
             }
@@ -304,7 +304,6 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function (bookId, chapter) {
-        //console.log("Navigate chpater " + bookId, ", " + chapter)
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
@@ -346,16 +345,16 @@ const Scriptures = (function () {
     onHashChanged = function () {
         let ids = [];
 
-        if (location.hash !== "" && location.hash.length > 1){
+        if (location.hash !== "" && location.hash.length > 1) {
             ids = location.hash.slice(1).split(":");
         }
 
-        if (ids.length <= 0 ) {
+        if (ids.length <= 0) {
             navigateHome();
-        } else if (ids.length === 1){
+        } else if (ids.length === 1) {
             let volumeId = Number(ids[0]);
 
-            if (volumeId < volumes[0].id || volumeId > volumes.slice(-1)[0].id){
+            if (volumeId < volumes[0].id || volumeId > volumes.slice(-1)[0].id) {
                 navigateHome();
             } else {
                 navigateHome(volumeId);
@@ -366,12 +365,12 @@ const Scriptures = (function () {
             if (books[bookId] === undefined) {
                 navigateHome();
             } else {
-                if (ids.length === 2){
+                if (ids.length === 2) {
                     navigateBook(bookId);
-                } else{
+                } else {
                     let chapter = Number(ids[2]);
 
-                    if(bookChapterValid(bookId, chapter)){
+                    if (bookChapterValid(bookId, chapter)) {
                         navigateChapter(bookId, chapter);
                     } else {
                         navigateHome();
@@ -467,6 +466,6 @@ const Scriptures = (function () {
     return {
         init,
         testGeoplaces,
-        onHashChanged,
+        onHashChanged
     };
 }());
