@@ -277,6 +277,7 @@ const Scriptures = (function () {
 
     getScripturesFailure = function (){
         document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter contents from server";
+        injectBreadcrumbs();
     };
 
     htmlAnchor = function (volume) {
@@ -455,6 +456,7 @@ const Scriptures = (function () {
                 id: DIV_SCRIPTURES_NAVIGATOR,
                 content: chaptersGrid(book)
             })
+            
         }
     };
 
