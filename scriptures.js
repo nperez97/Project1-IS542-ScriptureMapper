@@ -2,12 +2,14 @@ const Scriptures = (function () {
     "use strict";
 
     //---------------------------------CONSTANTS---------------------------------
-    const REQUEST_GET = "GET";
+    
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
+    const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
+    const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
     const TAG_HEADER5 = "h5";
@@ -28,6 +30,8 @@ const Scriptures = (function () {
     let bookChapterValid;
     let booksGrid;
     let booksGridContent;
+    let chaptersGrid;
+    let chaptersGridContent;
     let cacheBooks;
     let htmlAnchor;
     let htmlDiv;
@@ -99,6 +103,35 @@ const Scriptures = (function () {
                 content: book.gridName
             });
         });
+
+        return gridContent;
+    };
+
+    chaptersGrid = function (book) {
+        return htmlDiv({
+            classKey: CLASS_VOLUME,
+            content: htmlElement(TAG_HEADER5, book.fullName)
+        }) + htmlDiv({
+            classKey: CLASS_BOOKS,
+            content: chaptersGridContent(book)
+        });
+    };
+
+    // FIX --- not showing grid buttons
+    chaptersGridContent = function(book) {
+        let gridContent = "";
+        let chapter = 1;
+
+        while (chapter <= book.numChapters) {
+            gridContent += htmlLink({
+                classKey: `${CLASS_BUTTON} ${CLASS_CHAPTER}`,
+                id: chapter,
+                href: `#0:${book.id}:${chapter}`,
+                content: chapter
+            });
+
+            chapter += 1;
+        }
 
         return gridContent;
     };
@@ -185,7 +218,7 @@ const Scriptures = (function () {
         let booksLoaded = false;
         let volumesLoaded = false;
 
-        ajax("https://scriptures.byu.edu/mapscrip/model/books.php", 
+        ajax(URL_BOOKS, 
             data => {
                 books = data;
                 booksLoaded = true;
@@ -195,7 +228,7 @@ const Scriptures = (function () {
                 }
             }
         );
-        ajax("https://scriptures.byu.edu/mapscrip/model/volumes.php", 
+        ajax(URL_VOLUMES, 
             data => {
                 volumes = data;
                 volumesLoaded = true;
@@ -208,7 +241,15 @@ const Scriptures = (function () {
     };
 
     navigateBook = function (bookId) {
-        console.log("navigateBook" + bookId);
+        let book = books[bookId];
+
+        if (book.numChapters <= 1) {
+            navigateChapter(bookId, book.numChapters);
+        } else {
+            document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+                
+            })
+        }
     };
 
     navigateChapter = function (bookId, chapter) {
