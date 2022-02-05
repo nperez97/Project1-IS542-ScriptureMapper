@@ -7,6 +7,7 @@ const Scriptures = (function () {
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
     const CLASS_VOLUME = "volume";
+    const DIV_BREADCRUMBS = "crumbs";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
     const REQUEST_GET = "GET";
@@ -119,6 +120,24 @@ const Scriptures = (function () {
         return gridContent;
     };
 
+    cacheBooks = function (callback){
+        volumes.forEach(function (volume) {
+            let volumeBooks = [];
+            let bookId = volume.minBookId;
+
+            while (bookId <= volume.maxBookId) {
+                volumeBooks.push(books[bookId]);
+                bookId += 1;
+            }
+
+            volume.books = volumeBooks;
+        });
+
+        if (typeof callback === "function"){
+            callback();
+        }
+    };
+
     chaptersGrid = function (book) {
         return htmlDiv({
             classKey: CLASS_VOLUME,
@@ -148,24 +167,6 @@ const Scriptures = (function () {
         return gridContent;
     };
 
-    cacheBooks = function (callback){
-        volumes.forEach(function (volume) {
-            let volumeBooks = [];
-            let bookId = volume.minBookId;
-
-            while (bookId <= volume.maxBookId) {
-                volumeBooks.push(books[bookId]);
-                bookId += 1;
-            }
-
-            volume.books = volumeBooks
-        });
-
-        if (typeof callback === "function"){
-            callback();
-        }
-    };
-
     encodedScripturesUrlParameters = function (bookId, chapter, verses, isJst){
         if (bookId !== undefined && chapter !== undefined){
             let options = "";
@@ -189,7 +190,7 @@ const Scriptures = (function () {
     };
 
     getScripturesFailure = function (){
-        console.log("can't connect to server")
+        document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter contents from server";
     };
 
     htmlAnchor = function (volume) {
@@ -217,9 +218,15 @@ const Scriptures = (function () {
         return `<div${idString}${classString}>${contentString}</div>`;
     };
     
-    htmlElement = function (tagName, content) {
-        return `<${tagName}>${content}</${tagName}>`;
-    }
+    htmlElement = function (tagName, content, classValue) {
+        let classString = "";
+
+        if (classValue !== undefined) {
+            classString = ` class="${classValue}"`;
+        }
+
+        return `<${tagName}${classString}>${content}</${tagName}>`;
+    };
     
     
     
@@ -228,24 +235,29 @@ const Scriptures = (function () {
         let contentString = "";
         let hrefString = "";
         let idString = "";
+        let titleString = "";
     
         if (parameters.classKey !== undefined) {
             classString = ` class="${parameters.classKey}"`;
         }
-        
+
         if (parameters.content !== undefined) {
             contentString = parameters.content;
         }
-        
+
         if (parameters.href !== undefined) {
             hrefString = ` href="${parameters.href}"`;
         }
-    
+
         if (parameters.id !== undefined) {
             idString = ` id="${parameters.id}"`;
         }
+
+        if (parameters.title !== undefined) {
+            titleString = ` title="${parameters.title}"`;
+        }
     
-        return `<a${idString}${classString}${hrefString}>${contentString}</a>`;
+        return `<a${idString}${classString}${hrefString}${titleString}>${contentString}</a>`;    
     };
     
     htmlHashLink = function (hashArguments, content) {
@@ -304,7 +316,6 @@ const Scriptures = (function () {
     };
 
     nextChapter = function(book, chapter) {
-        let book = book[bookId];
 
         if (chapter < book.numChapters) {
             return [
