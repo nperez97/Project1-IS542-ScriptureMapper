@@ -2,27 +2,37 @@ const Scriptures = (function () {
     "use strict";
 
     //---------------------------------CONSTANTS---------------------------------
-    const BOTTOM_PADDING = "<br /><br />"
+    const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
+    const CLASS_ICON = "material-icons"; // NEW
     const CLASS_VOLUME = "volume";
     const DIV_BREADCRUMBS = "crumbs";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
+    const ICON_NEXT = "skip_next"; // NEW
+    const ICON_PREVIOUS = "skip_previous"; // NEW
     const INDEX_FLAG = 11;
     const INDEX_LATITUDE = 3;
     const INDEX_LONGITUDE = 4;
     const INDEX_PLACENAME = 2;
     const LAT_LON_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
+    const MAX_ZOOM_LEVEL = 18; // NEW
+    const MIN_ZOOM_LEVEL = 6; // NEW
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
     const TAG_HEADER5 = "h5";
+    const TAG_LIST_ITEM = "li"; // NEW
+    const TAG_SPAN = "span"; // NEW
+    const TAG_UNORDERED_LIST = "ul"; // NEW
+    const TEXT_TOP_LEVEL = "The Scriptures"; // NEW
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
     const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
+    const ZOOM_RATIO = 450; // NEW
 
 
 
@@ -31,6 +41,10 @@ const Scriptures = (function () {
     let books;
     let gmLabels = [];
     let gmMarkers = [];
+    let initializedMapLabel = false; // NEW
+    let requestedBookId; // new
+    let requestedChapter; // new
+    let requestedNextPrevious; // new
     let volumes;
 
 
@@ -51,19 +65,26 @@ const Scriptures = (function () {
     let htmlDiv;
     let htmlElement;
     let htmlLink;
-    let htmlHashLink;
+    let htmlListItem; // new
+    let htmlListItemLink; // new
     let init;
+    let injectBreadcrumbs; // new
+    let markerIndex; //
+    let mergePlacename; //new
     let navigateBook;
     let navigateChapter;
     let navigateHome;
     let nextChapter;
+    let nextPreviousMarkup; //new
     let onHashChanged;
     let previousChapter;
     let setupMarkers;
     let showLocation;
     let titleForBookChapter;
     let testGeoplaces;
+    let volumeForId; // new
     let volumesGridContent;
+    let zoomMapToFitMarkers; // new
 
     //---------------------------------PRIVATE METHODS---------------------------------
     
@@ -197,7 +218,7 @@ const Scriptures = (function () {
         });
     };
 
-    // FIX --- not showing grid buttons
+    
     chaptersGridContent = function (book) {
         let gridContent = "";
         let chapter = 1;
@@ -240,6 +261,7 @@ const Scriptures = (function () {
         }
     };
 
+    /*************new content ********* */
     getScripturesCallback = function (chapterHtml) {
         let book = books[requestedBookId];
 
@@ -323,10 +345,18 @@ const Scriptures = (function () {
     
         return `<a${idString}${classString}${hrefString}${titleString}>${contentString}</a>`;    
     };
-    
-    htmlHashLink = function (hashArguments, content) {
-        return `<a href="javascript:void(0)" onclick="changeHash(${hashArguments})">${content}</a>`;
+
+    /*************************************NEW **********************/
+
+    htmlListItem = function (content) {
+        return htmlElement(TAG_LIST_ITEM, content);
     };
+
+    htmlListItemLink = function (content, href = "") {
+        return htmlListItem(htmlLink({content, href: `#${href}`}));
+    };
+
+    //******************************************************** */
 
     init = function (callback) {
         let booksLoaded = false;
@@ -354,6 +384,67 @@ const Scriptures = (function () {
         );
     };
 
+    //**************************************NEW ************************ */
+    injectBreadcrumbs = function (volume, book, chapter) {
+        let crumbs = "";
+
+        if (volume === undefined) {
+            crumbs = htmlListItem(TEXT_TOP_LEVEL);
+        } else {
+            crumbs = htmlListItemLink(TEXT_TOP_LEVEL);
+
+            if (book === undefined) {
+                crumbs += htmlListItem(volume.fullName);
+            } else {
+                crumbs += htmlListItemLink(volume.fullName, volume.id);
+
+                if (chapter === undefined || chapter <= 0) {
+                    crumbs += htmlListItem(book.tocName);
+                } else {
+                    crumbs += htmlListItemLink(book.tocName, `${volume.id}:${book.id}`);
+                    crumbs += htmlListItem(chapter);
+                }
+            }
+        }
+
+        document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlElement(TAG_UNORDERED_LIST, crumbs);
+    };
+
+    markerIndex = function (latitude, longitude) {
+        let i = gmMarkers.length - 1;
+
+        while (i >= 0) {
+            let marker = gmMarkers[i];
+
+            // Note: here is the safe way to compare IEEE floating-point
+            // numbers: compare their difference to a small number
+            const latitudeDelta = Math.abs(marker.getPosition().lat() - latitude);
+            const longitudeDelta = Math.abs(marker.getPosition().lng() - longitude);
+
+            if (latitudeDelta < 0.00000001 && longitudeDelta < 0.00000001) {
+                return i;
+            }
+
+            i -= 1;
+        }
+
+        return -1;
+    };
+
+    mergePlacename = function (placename, index) {
+        let marker = gmMarkers[index];
+        let label = gmLabels[index];
+        let title = marker.getTitle();
+
+        if (!title.includes(placename)) {
+            title += ", " + placename;
+            marker.setTitle(title);
+            label.text = title;
+        }
+    };
+
+    //***************************************************************/
+
     navigateBook = function (bookId) {
         let book = books[bookId];
 
@@ -368,6 +459,26 @@ const Scriptures = (function () {
     };
 
     navigateChapter = function (bookId, chapter) {
+
+        //******************************* NEW ********************************/
+        requestedBookId = bookId;
+        requestedChapter = chapter;
+
+        let nextPrev = previousChapter(bookId, chapter);
+
+        if (nextPrev === undefined) {
+            requestedNextPrevious = "";
+        } else {
+            requestedNextPrevious = nextPreviousMarkup(nextPrev, ICON_PREVIOUS);
+        }
+
+        nextPrev = nextChapter(bookId, chapter);
+
+        if (nextPrev !== undefined) {
+            requestedNextPrevious += nextPreviousMarkup(nextPrev, ICON_NEXT);
+        }
+
+        //***************************************************************/
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
@@ -378,33 +489,47 @@ const Scriptures = (function () {
         });
     };
 
-    nextChapter = function(book, chapter) {
+    nextChapter = function(bookId, chapter) {
+        let book = books[bookId];
 
-        if (chapter < book.numChapters) {
-            return [
-                book,
-                chapter + 1,
-                titleForBookChapter(book, chapter + 1)
-            ];
-        }
-
-        let nextBook = books[bookId + 1];
-
-
-        if (nextBook !== undefined) {
-            let nextChapterValue = 0;
-
-            if (nextBook.numChapters > 0) {
-                nextChapterValue = 1;
+        if (book !== undefined) {
+            if (chapter < book.numChapters) {
+                return [
+                    bookId,
+                    chapter + 1,
+                    titleForBookChapter(book, chapter + 1)
+                ];
             }
-
-            return [
-                nextBook.id,
-                nextChapterValue,
-                titleForBookChapter(nextBook, nextChapterValue)
-            ];
+    
+            let nextBook = books[bookId + 1];
+    
+    
+            if (nextBook !== undefined) {
+                let nextChapterValue = 0;
+    
+                if (nextBook.numChapters > 0) {
+                    nextChapterValue = 1;
+                }
+    
+                return [
+                    nextBook.id,
+                    nextChapterValue,
+                    titleForBookChapter(nextBook, nextChapterValue)
+                ];
+            }
         }
     };
+
+    //***************************** NEW **********************************/
+    nextPreviousMarkup = function (nextPrev, icon) {
+        return htmlLink({
+            content: htmlElement(TAG_SPAN, icon, CLASS_ICON),
+            href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
+            title: nextPrev[2]
+        });
+    };
+
+    //***************************************************************/
 
     onHashChanged = function () {
         let ids = [];
@@ -497,6 +622,42 @@ const Scriptures = (function () {
         makeUniqueGeoPlaces(geoplaces);
     }
 
+    //*******************************NEW - DELETE unique geoplaces if keeping? ********************************/
+
+    nextPreviousMarkup = function (nextPrev, icon) {
+        return htmlLink({
+            content: htmlElement(TAG_SPAN, icon, CLASS_ICON),
+            href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
+            title: nextPrev[2]
+        });
+    };
+
+    previousChapter = function (bookId, chapter) {
+        let book = books[bookId];
+
+        if (book !== undefined) {
+            if (chapter > 1) {
+                return [
+                    bookId,
+                    chapter - 1,
+                    titleForBookChapter(book, chapter - 1)
+                ];
+            }
+
+            let previousBook = books[bookId - 1];
+
+            if (previousBook !== undefined) {
+                return [
+                    previousBook.id,
+                    previousBook.numChapters,
+                    titleForBookChapter(previousBook, previousBook.numChapters)
+                ];
+            }
+        }
+    };
+
+    //***************************************************************/
+
     setupMarkers = function () {
         if (gmMarkers.length > 0) {
             clearMarkers();
@@ -541,6 +702,16 @@ const Scriptures = (function () {
         return book.tocName;
     };
 
+    //****************************** NEW *********************************/
+
+    volumeForId = function (volumeId) {
+        if (volumeId !== undefined && volumeId > 0 && volumeId < volumes.length) {
+            return volumes[volumeId - 1];
+        }
+    };
+
+    //****************************** *** *********************************/
+
     volumesGridContent = function (volumeId) {
         let gridContent = "";
 
@@ -556,6 +727,36 @@ const Scriptures = (function () {
         });
         return gridContent + BOTTOM_PADDING;
     };
+
+    //****************************** NEW *********************************/
+    zoomMapToFitMarkers = function (matches) {
+        if (gmMarkers.length > 0) {
+            if (gmMarkers.length === 1 && matches) {
+                // When there's exactly one marker, add it and zoom to it
+                let zoomLevel = Math.round(Number(matches[9]) / ZOOM_RATIO);
+
+                if (zoomLevel < MIN_ZOOM_LEVEL) {
+                    zoomLevel = MIN_ZOOM_LEVEL;
+                } else if (zoomLevel > MAX_ZOOM_LEVEL) {
+                    zoomLevel = MAX_ZOOM_LEVEL;
+                }
+
+                map.setZoom(zoomLevel);
+                map.panTo(gmMarkers[0].position);
+            } else {
+                let bounds = new google.maps.LatLngBounds();
+
+                gmMarkers.forEach(function (marker) {
+                    bounds.extend(marker.position);
+                });
+
+                map.panTo(bounds.getCenter());
+                map.fitBounds(bounds);
+            }
+        }
+    };
+
+    //*****************************************************************/
 
     //---------------------------------PUBLIC API---------------------------------
 
