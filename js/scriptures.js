@@ -18,8 +18,7 @@ const Scriptures = (function () {
     const INDEX_LONGITUDE = 4;
     const INDEX_PLACENAME = 2;
     const LAT_LON_PARSER = /\((.*),'(.*)',(.*),(.*),(.*),(.*),(.*),(.*),(.*),(.*),'(.*)'\)/;
-    const MAX_ZOOM_LEVEL = 18; // NEW
-    const MIN_ZOOM_LEVEL = 6; // NEW
+    const NAVIGATION_TEXT = "The Scriptures";
     const REQUEST_GET = "GET";
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
@@ -27,12 +26,11 @@ const Scriptures = (function () {
     const TAG_LIST_ITEM = "li"; // NEW
     const TAG_SPAN = "span"; // NEW
     const TAG_UNORDERED_LIST = "ul"; // NEW
-    const TEXT_TOP_LEVEL = "The Scriptures"; // NEW
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
     const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
     const URL_VOLUMES = `${URL_BASE}mapscrip/model/volumes.php`;
-    const ZOOM_RATIO = 450; // NEW
+    const ZOOM_LEVEL = 13;
 
 
 
@@ -41,7 +39,7 @@ const Scriptures = (function () {
     let books;
     let gmLabels = [];
     let gmMarkers = [];
-    let initializedMapLabel = false; // NEW
+    let mapLabelsInitialized = false; // NEW
     let requestedBookId; // new
     let requestedChapter; // new
     let requestedNextPrevious; // new
@@ -68,7 +66,7 @@ const Scriptures = (function () {
     let htmlListItem; // new
     let htmlListItemLink; // new
     let init;
-    let injectBreadcrumbs; // new
+    let insertBreadCrumbs;
     let markerIndex; //
     let mergePlacename; //new
     let navigateBook;
@@ -79,12 +77,11 @@ const Scriptures = (function () {
     let onHashChanged;
     let previousChapter;
     let setupMarkers;
+    let setZoom;
     let showLocation;
     let titleForBookChapter;
-    let testGeoplaces;
     let volumeForId; // new
     let volumesGridContent;
-    let zoomMapToFitMarkers; // new
 
     //---------------------------------PRIVATE METHODS---------------------------------
     
@@ -103,11 +100,11 @@ const Scriptures = (function () {
 
             gmMarkers.push(marker);
 
-            if (!initializedMapLabel) {
+            if (!mapLabelsInitialized) {
                 const initialize = MapLabelInit;
-
                 initialize();
-                initializedMapLabel = true;
+
+                mapLabelsInitialized = true;
             }
 
             let mapLabel = new MapLabel({
@@ -122,7 +119,6 @@ const Scriptures = (function () {
             gmLabels.push(mapLabel);
         }
     };
-    // ----------------------
     
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
@@ -270,13 +266,13 @@ const Scriptures = (function () {
             element.innerHTML += `<div class="nextprev">${requestedNextPrevious}</div>`;
         });
 
-        injectBreadcrumbs(volumeForId(book.parentBookId), book, requestedChapter);
+        insertBreadCrumbs(volumeForId(book.parentBookId), book, requestedChapter);
         setupMarkers();
     };
 
     getScripturesFailure = function (){
         document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter contents from server";
-        injectBreadcrumbs();
+        insertBreadCrumbs();
     };
 
     htmlAnchor = function (volume) {
@@ -385,13 +381,13 @@ const Scriptures = (function () {
     };
 
     //**************************************NEW ************************ */
-    injectBreadcrumbs = function (volume, book, chapter) {
+    insertBreadCrumbs = function (volume, book, chapter) {
         let crumbs = "";
 
         if (volume === undefined) {
-            crumbs = htmlListItem(TEXT_TOP_LEVEL);
+            crumbs = htmlListItem(NAVIGATION_TEXT);
         } else {
-            crumbs = htmlListItemLink(TEXT_TOP_LEVEL);
+            crumbs = htmlListItemLink(NAVIGATION_TEXT);
 
             if (book === undefined) {
                 crumbs += htmlListItem(volume.fullName);
@@ -416,8 +412,6 @@ const Scriptures = (function () {
         while (i >= 0) {
             let marker = gmMarkers[i];
 
-            // Note: here is the safe way to compare IEEE floating-point
-            // numbers: compare their difference to a small number
             const latitudeDelta = Math.abs(marker.getPosition().lat() - latitude);
             const longitudeDelta = Math.abs(marker.getPosition().lng() - longitude);
 
@@ -504,7 +498,6 @@ const Scriptures = (function () {
     
             let nextBook = books[bookId + 1];
     
-    
             if (nextBook !== undefined) {
                 let nextChapterValue = 0;
     
@@ -571,57 +564,7 @@ const Scriptures = (function () {
     };
 
 
-    testGeoplaces = function () {
 
-        const similar = function (number1, number2) {
-            return Math.abs(number1 - number2) < 0.000001;
-        }
-        
-        const matchingElement = function (array, object) {
-            let match = null;
-
-            array.forEach(element => {
-                if (similar(element.latitude, object.latitude) && similar(element.longitude, object.latitude)) {
-                    if (match === null){
-                        match = element;
-                    }
-                }
-            });
-
-            return match;
-        };
-
-        const makeUniqueGeoPlaces = function (geoPlaces) {
-            let uniqueGeoPlaces = [];
-
-            geoPlaces.forEach(geoPlace => {
-                const matchedElement = matchingElement(uniqueGeoPlaces, geoPlace);
-
-                if (!matchedElement){
-                    uniqueGeoPlaces.push(geoPlace)
-                } else {
-                    if (!matchedElement.name.toLowerCase().includes(geoPlace.name.toLowerCase())) {
-                        matchedElement.name = matchedElement.name + ", " + geoPlace.name;
-                    }
-                }
-            });
-
-            return uniqueGeoPlaces
-        };
-
-        const geoplaces = [
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 536, name: "Hazor", latitude: 33.017181, longitude: 35.568048 },
-            { id: 822, name: "Mount Halak", latitude: 30.916667, longitude: 34.833333 },
-            { id: 1021, name: "Seir", latitude: 30.734691, longitude: 35.606250 },
-            { id: 129, name: "Baal-gad", latitude: 33.416159, longitude: 35.857256 },
-            { id: 1190, name: "Valley of Lebanon", latitude: 33.416519, longitude: 35.857256 },
-            { id: 824, name: "Mount Hermon", latitude: 33.416159, longitude: 35.857256 },
-        ];
-
-        makeUniqueGeoPlaces(geoplaces);
-    }
 
     //*******************************NEW - DELETE unique geoplaces if keeping? ********************************/
 
@@ -683,13 +626,34 @@ const Scriptures = (function () {
             }
         });
 
-        zoomMapToFitMarkers(matches);
+        setZoom();
     };
 
-    showLocation = function (id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
-        console.log(id, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewHeading);
-        map.panTo({lat: latitude, lng: longitude});
-        map.setZoom(Math.round(viewAltitude / ZOOM_RATIO));
+    setZoom = function () {
+        let bounds = new google.maps.LatLngBounds()
+
+        // in case there is only one marker, need to not zoom in so much
+        if (gmMarkers.length === 1) {
+            bounds.extend(gmMarkers[0].getPosition())
+            map.fitBounds(bounds)
+            map.setZoom(ZOOM_LEVEL)
+        }
+        else {
+            gmMarkers.map(location => {
+                bounds.extend(location.getPosition())
+                map.fitBounds(bounds)
+            })
+        }
+    }
+
+    showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
+        console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
+       
+        let bounds = new google.maps.LatLngBounds();
+
+        bounds.extend({lat: Number(latitude), lng: Number(longitude)});
+        map.fitBounds(bounds);
+        map.setZoom(ZOOM_LEVEL);
     };
 
     titleForBookChapter = function (book, chapter) {
@@ -729,43 +693,12 @@ const Scriptures = (function () {
         return gridContent + BOTTOM_PADDING;
     };
 
-    //****************************** NEW *********************************/
-    zoomMapToFitMarkers = function (matches) {
-        if (gmMarkers.length > 0) {
-            if (gmMarkers.length === 1 && matches) {
-                // When there's exactly one marker, add it and zoom to it
-                let zoomLevel = Math.round(Number(matches[9]) / ZOOM_RATIO);
-
-                if (zoomLevel < MIN_ZOOM_LEVEL) {
-                    zoomLevel = MIN_ZOOM_LEVEL;
-                } else if (zoomLevel > MAX_ZOOM_LEVEL) {
-                    zoomLevel = MAX_ZOOM_LEVEL;
-                }
-
-                map.setZoom(zoomLevel);
-                map.panTo(gmMarkers[0].position);
-            } else {
-                let bounds = new google.maps.LatLngBounds();
-
-                gmMarkers.forEach(function (marker) {
-                    bounds.extend(marker.position);
-                });
-
-                map.panTo(bounds.getCenter());
-                map.fitBounds(bounds);
-            }
-        }
-    };
-
-    //*****************************************************************/
-
     //---------------------------------PUBLIC API---------------------------------
 
 
     return {
         init,
         onHashChanged,
-        showLocation,
-        testGeoplaces
+        showLocation
     };
 }());
