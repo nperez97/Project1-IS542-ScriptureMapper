@@ -87,10 +87,14 @@ const Scriptures = (function () {
     //---------------------------------PRIVATE METHODS---------------------------------
     
     addMarker = function (placename, latitude, longitude) {
-        
+
         let index = getMarkerIndex(latitude, longitude);
 
         if (index >= 0) {
+
+            // Check whether there is already a marker at the new marker's latitude/longitude.  
+            // If so, merge the name of the new marker with the old one.
+
             mergePlacename(placename, index);
         } else {
             let marker = new google.maps.Marker({
@@ -148,6 +152,7 @@ const Scriptures = (function () {
                 if (typeof successCallback === "function") {
                     successCallback(data);
                 }
+                
             } else {
                 if (typeof failureCallback === "function") {
                     failureCallback(request);
@@ -283,7 +288,6 @@ const Scriptures = (function () {
 
     getScripturesFailure = function (){
         document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter contents from server";
-        insertBreadCrumbs();
     };
 
     htmlAnchor = function (volume) {
@@ -402,9 +406,9 @@ const Scriptures = (function () {
                 crumbs += htmlListItemLink(volume.fullName, volume.id);
 
                 if (chapter === undefined || chapter <= 0) {
-                    crumbs += htmlListItem(book.tocName);
+                    crumbs += htmlListItem(book.fullName);
                 } else {
-                    crumbs += htmlListItemLink(book.tocName, `${volume.id}:${book.id}`);
+                    crumbs += htmlListItemLink(book.fullName, `${volume.id}:${book.id}`);
                     crumbs += htmlListItem(chapter);
                 }
             }

@@ -1,4 +1,4 @@
-## Nefi Perez | Project 1 | IS 542
+## Nefi Perez - IS 542
 I learned several things through the course of this project. I was able to both learn and reinforce some class concepts and also learn from some challenges that I faced in creating this project.
 
 
