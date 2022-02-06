@@ -114,9 +114,8 @@ const Scriptures = (function () {
                 text: marker.getTitle(),
                 position: new google.maps.LatLng(Number(latitude), Number(longitude)),
                 map,
-                fontSize: 16,
+                fontSize: 15,
                 fontColor: "#201000",
-                strokeColor: "#fff8f0",
                 align: "left"
             });
 
