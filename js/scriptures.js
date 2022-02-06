@@ -6,13 +6,14 @@ const Scriptures = (function () {
     const CLASS_BOOKS = "books";
     const CLASS_BUTTON = "btn";
     const CLASS_CHAPTER = "chapter";
-    const CLASS_ICON = "material-icons"; // NEW
+    const CLASS_ICON = "material-icons";
+    const CLASS_NEXT_PREV = "nextprev";
     const CLASS_VOLUME = "volume";
     const DIV_BREADCRUMBS = "crumbs";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
-    const ICON_NEXT = "skip_next"; // NEW
-    const ICON_PREVIOUS = "skip_previous"; // NEW
+    const ICON_NEXT = "skip_next";
+    const ICON_PREVIOUS = "skip_previous";
     const INDEX_FLAG = 11;
     const INDEX_LATITUDE = 3;
     const INDEX_LONGITUDE = 4;
@@ -23,9 +24,9 @@ const Scriptures = (function () {
     const REQUEST_STATUS_OK = 200;
     const REQUEST_STATUS_ERROR = 400;
     const TAG_HEADER5 = "h5";
-    const TAG_LIST_ITEM = "li"; // NEW
-    const TAG_SPAN = "span"; // NEW
-    const TAG_UNORDERED_LIST = "ul"; // NEW
+    const TAG_LIST_ITEM = "li";
+    const TAG_SPAN = "span";
+    const TAG_UNORDERED_LIST = "ul";
     const URL_BASE = "https://scriptures.byu.edu/";
     const URL_BOOKS = `${URL_BASE}mapscrip/model/books.php`;
     const URL_SCRIPTURES = `${URL_BASE}mapscrip/mapgetscrip.php`;
@@ -39,10 +40,10 @@ const Scriptures = (function () {
     let books;
     let gmLabels = [];
     let gmMarkers = [];
-    let mapLabelsInitialized = false; // NEW
-    let requestedBookId; // new
-    let requestedChapter; // new
-    let requestedNextPrevious; // new
+    let mapLabelsInitialized = false;
+    let requestedBookId;
+    let requestedChapter;
+    let nextPreviousButtons;
     let volumes;
 
 
@@ -57,36 +58,37 @@ const Scriptures = (function () {
     let chaptersGridContent;
     let clearMarkers;
     let encodedScripturesUrlParameters;
+    let getMarkerIndex;
     let getScripturesCallback;
     let getScripturesFailure;
     let htmlAnchor;
     let htmlDiv;
     let htmlElement;
     let htmlLink;
-    let htmlListItem; // new
-    let htmlListItemLink; // new
+    let htmlListItem;
+    let htmlListItemLink;
     let init;
     let insertBreadCrumbs;
-    let markerIndex; //
-    let mergePlacename; //new
+    let mergePlacename;
     let navigateBook;
     let navigateChapter;
     let navigateHome;
     let nextChapter;
-    let nextPreviousMarkup; //new
+    let nextPreviousBuilder;
     let onHashChanged;
     let previousChapter;
     let setupMarkers;
     let setZoom;
     let showLocation;
     let titleForBookChapter;
-    let volumeForId; // new
+    let volumeForId;
     let volumesGridContent;
 
     //---------------------------------PRIVATE METHODS---------------------------------
     
     addMarker = function (placename, latitude, longitude) {
-        let index = markerIndex(latitude, longitude);
+        
+        let index = getMarkerIndex(latitude, longitude);
 
         if (index >= 0) {
             mergePlacename(placename, index);
@@ -98,21 +100,30 @@ const Scriptures = (function () {
                 animation: google.maps.Animation.DROP
             });
 
+            marker.addListener("click", toggleBounce);
+
+            function toggleBounce() {
+                if (marker.getAnimation() !== null) {
+                  marker.setAnimation(null);
+                } else {
+                  marker.setAnimation(google.maps.Animation.BOUNCE);
+                }
+            }
+
             gmMarkers.push(marker);
 
             if (!mapLabelsInitialized) {
-                const initialize = MapLabelInit;
-                initialize();
-
+                MapLabelInit();
                 mapLabelsInitialized = true;
             }
 
+            // used https://github.com/googlearchive/js-map-label/blob/gh-pages/src/maplabel.js to implement
             let mapLabel = new MapLabel({
                 text: marker.getTitle(),
                 position: new google.maps.LatLng(Number(latitude), Number(longitude)),
                 map,
                 fontSize: 15,
-                fontColor: "#201000",
+                fontColor: "#086bcf",
                 align: "left"
             });
 
@@ -256,14 +267,14 @@ const Scriptures = (function () {
         }
     };
 
-    /*************new content ********* */
+    
     getScripturesCallback = function (chapterHtml) {
         let book = books[requestedBookId];
 
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
 
         document.querySelectorAll(".navheading").forEach(function (element) {
-            element.innerHTML += `<div class="nextprev">${requestedNextPrevious}</div>`;
+            element.innerHTML += `<div class="${CLASS_NEXT_PREV}">${nextPreviousButtons}</div>`;
         });
 
         insertBreadCrumbs(volumeForId(book.parentBookId), book, requestedChapter);
@@ -342,8 +353,6 @@ const Scriptures = (function () {
         return `<a${idString}${classString}${hrefString}${titleString}>${contentString}</a>`;    
     };
 
-    /*************************************NEW **********************/
-
     htmlListItem = function (content) {
         return htmlElement(TAG_LIST_ITEM, content);
     };
@@ -351,8 +360,6 @@ const Scriptures = (function () {
     htmlListItemLink = function (content, href = "") {
         return htmlListItem(htmlLink({content, href: `#${href}`}));
     };
-
-    //******************************************************** */
 
     init = function (callback) {
         let booksLoaded = false;
@@ -380,7 +387,7 @@ const Scriptures = (function () {
         );
     };
 
-    //**************************************NEW ************************ */
+
     insertBreadCrumbs = function (volume, book, chapter) {
         let crumbs = "";
 
@@ -406,20 +413,20 @@ const Scriptures = (function () {
         document.getElementById(DIV_BREADCRUMBS).innerHTML = htmlElement(TAG_UNORDERED_LIST, crumbs);
     };
 
-    markerIndex = function (latitude, longitude) {
+    
+    getMarkerIndex = function (latitude, longitude) {
         let i = gmMarkers.length - 1;
 
         while (i >= 0) {
             let marker = gmMarkers[i];
 
-            const latitudeDelta = Math.abs(marker.getPosition().lat() - latitude);
-            const longitudeDelta = Math.abs(marker.getPosition().lng() - longitude);
+            const latDelta = Math.abs(marker.getPosition().lat() - latitude);
+            const longDelta = Math.abs(marker.getPosition().lng() - longitude);
 
-            if (latitudeDelta < 0.00000001 && longitudeDelta < 0.00000001) {
+            if (latDelta < 0.0000001 && longDelta < 0.0000001) {
                 return i;
             }
-
-            i -= 1;
+            i = i-1;
         }
 
         return -1;
@@ -437,7 +444,6 @@ const Scriptures = (function () {
         }
     };
 
-    //***************************************************************/
 
     navigateBook = function (bookId) {
         let book = books[bookId];
@@ -455,25 +461,23 @@ const Scriptures = (function () {
 
     navigateChapter = function (bookId, chapter) {
 
-        //******************************* NEW ********************************/
         requestedBookId = bookId;
         requestedChapter = chapter;
 
         let nextPrev = previousChapter(bookId, chapter);
 
         if (nextPrev === undefined) {
-            requestedNextPrevious = "";
+            nextPreviousButtons = "";
         } else {
-            requestedNextPrevious = nextPreviousMarkup(nextPrev, ICON_PREVIOUS);
+            nextPreviousButtons = nextPreviousBuilder(nextPrev, ICON_PREVIOUS);
         }
 
         nextPrev = nextChapter(bookId, chapter);
 
         if (nextPrev !== undefined) {
-            requestedNextPrevious += nextPreviousMarkup(nextPrev, ICON_NEXT);
+            nextPreviousButtons += nextPreviousBuilder(nextPrev, ICON_NEXT);
         }
 
-        //***************************************************************/
         ajax(encodedScripturesUrlParameters(bookId, chapter), getScripturesCallback, getScripturesFailure, true);
     };
 
@@ -514,16 +518,14 @@ const Scriptures = (function () {
         }
     };
 
-    //***************************** NEW **********************************/
-    nextPreviousMarkup = function (nextPrev, icon) {
+    
+    nextPreviousBuilder = function (nextPrev, icon) {
         return htmlLink({
             content: htmlElement(TAG_SPAN, icon, CLASS_ICON),
             href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
             title: nextPrev[2]
         });
     };
-
-    //***************************************************************/
 
     onHashChanged = function () {
         let ids = [];
@@ -563,19 +565,6 @@ const Scriptures = (function () {
         }
     };
 
-
-
-
-    //*******************************NEW - DELETE unique geoplaces if keeping? ********************************/
-
-    nextPreviousMarkup = function (nextPrev, icon) {
-        return htmlLink({
-            content: htmlElement(TAG_SPAN, icon, CLASS_ICON),
-            href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
-            title: nextPrev[2]
-        });
-    };
-
     previousChapter = function (bookId, chapter) {
         let book = books[bookId];
 
@@ -591,16 +580,17 @@ const Scriptures = (function () {
             let previousBook = books[bookId - 1];
 
             if (previousBook !== undefined) {
+                let previousChapterValue = previousBook.numChapters;
+
                 return [
                     previousBook.id,
-                    previousBook.numChapters,
-                    titleForBookChapter(previousBook, previousBook.numChapters)
+                    previousChapterValue,
+                    titleForBookChapter(previousBook, previousChapterValue)
                 ];
             }
         }
     };
 
-    //***************************************************************/
 
     setupMarkers = function () {
         if (gmMarkers.length > 0) {
@@ -632,7 +622,6 @@ const Scriptures = (function () {
     setZoom = function () {
         let bounds = new google.maps.LatLngBounds()
 
-        // in case there is only one marker, need to not zoom in so much
         if (gmMarkers.length === 1) {
             bounds.extend(gmMarkers[0].getPosition())
             map.fitBounds(bounds)
@@ -647,7 +636,7 @@ const Scriptures = (function () {
     }
 
     showLocation = function (geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading) {
-        console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
+        //console.log(geotagId, placename, latitude, longitude, viewLatitude, viewLongitude, viewTilt, viewRoll, viewAltitude, viewHeading);
        
         let bounds = new google.maps.LatLngBounds();
 
@@ -667,15 +656,12 @@ const Scriptures = (function () {
         return book.tocName;
     };
 
-    //****************************** NEW *********************************/
-
     volumeForId = function (volumeId) {
         if (volumeId !== undefined && volumeId > 0 && volumeId < volumes.length) {
             return volumes[volumeId - 1];
         }
     };
 
-    //****************************** *** *********************************/
 
     volumesGridContent = function (volumeId) {
         let gridContent = "";
@@ -694,7 +680,6 @@ const Scriptures = (function () {
     };
 
     //---------------------------------PUBLIC API---------------------------------
-
 
     return {
         init,

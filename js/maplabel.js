@@ -1,3 +1,5 @@
+// Pulled from https://github.com/googlearchive/js-map-label/blob/gh-pages/src/maplabel.js
+
 /**
  * @license
  *
