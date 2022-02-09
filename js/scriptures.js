@@ -134,6 +134,40 @@ const Scriptures = (function () {
             gmLabels.push(mapLabel);
         }
     };
+
+    const getData = function (url, successCallback, failureCallback, skipJsonParse) {
+        fetch(url).then(function (response) {
+            if (response.ok) {
+                return response.text();
+            } else {
+                return response.json();
+            }
+
+            throw new Error("Network response was not okay.");
+        }).then(function (data) {
+            if (typeof successCallback === "function") {
+                successCallback(data);
+            } else {
+                throw new Error("Callback is not a valid function.");
+            }
+        }).catch(function (error) {
+            console.log("Error:", error.message);
+
+            if (typeof failureCallback === 'function') {
+                failureCallback(error);
+            }
+        });
+    };
+
+    const getJson = function (url) {
+        return fetch(url).then(function (response) {
+            if (response.ok) {
+                return response.json();
+            }
+
+            throw new Error("Network response was not okay.");
+        });
+    };
     
     ajax = function (url, successCallback, failureCallback, skipJsonParse) {
         let request = new XMLHttpRequest();
@@ -366,29 +400,40 @@ const Scriptures = (function () {
     };
 
     init = function (callback) {
-        let booksLoaded = false;
-        let volumesLoaded = false;
+        Promise.all([getJson(URL_BOOKS), getJson(URL_VOLUMES)]).then(jsonResults => {
+            let [ bookResult, volumesResult ] = jsonResults;
 
-        ajax(URL_BOOKS, 
-            data => {
-                books = data;
-                booksLoaded = true;
+            books = bookResult;
+            volumes = volumesResult;
+            cacheBooks(callback);
+        }).catch(error => {
+            console.log("unable to get volumes/book data:", error.message);
+        });
 
-                if (volumesLoaded){
-                    cacheBooks(callback);
-                }
-            }
-        );
-        ajax(URL_VOLUMES, 
-            data => {
-                volumes = data;
-                volumesLoaded = true;
 
-                if (booksLoaded){
-                    cacheBooks(callback);
-                }
-            }
-        );
+        // let booksLoaded = false;
+        // let volumesLoaded = false;
+
+        // getData(URL_BOOKS, 
+        //     data => {
+        //         books = data;
+        //         booksLoaded = true;
+
+        //         if (volumesLoaded){
+        //             cacheBooks(callback);
+        //         }
+        //     }
+        // );
+        // getData(URL_VOLUMES, 
+        //     data => {
+        //         volumes = data;
+        //         volumesLoaded = true;
+
+        //         if (booksLoaded){
+        //             cacheBooks(callback);
+        //         }
+        //     }
+        // );
     };
 
 
