@@ -1,65 +1,78 @@
 <!doctype html>
 <html class="no-js" lang="">
 <head>
-  <meta charset="utf-8">
-  <title>The Scriptures, Mapped</title>
-  <meta name="description" content="The Standard Works, Mapped">
-  <meta name="author" content="Nefi Perez">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <title>The Scriptures, Mapped</title>
+    <meta name="description" content="The Standard Works, Mapped">
+    <meta name="author" content="Nefi Perez">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
 
-  <script async
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlcvOj-1T67gF17fMGCIOsYqCAWH12Z7w&callback=initMap">
-  </script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 
-  <script src="js/maplabel.js"></script>
-  <script src="js/scriptures.js"></script>
+    <meta name="theme-color" content="#fafafa">
+
+    <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlcvOj-1T67gF17fMGCIOsYqCAWH12Z7w&callback=initMap">
+    </script>
+    <script defer src="https://unpkg.com/@googlemaps/markerwithlabel/dist/index.min.js"></script>
 </head>
-
 <body>
 
-  <div id="header">
-    <div id="crumbs"></div>
-    <div id="centerhead">
-      <div class="title">The Scriptures, Mapped</div>
-      <div class="subtitle">By Nefi Perez</div>
+    <!-- Put content in container -->
+    <div id = "container">
+        <div id="header">
+            <div id="crumbs"></div>
+            <div id="centerhead">
+                <div class="title">The Scriptures, Mapped</div>
+                <div class="subtitle">By Nefi Perez</div>
+            </div>
+        </div>
+        <div id="content">
+            <div id="scriptures"></div>
+            <div id="map"></div>
+        </div>
     </div>
-  </div>
-  <div id= "content">
-    <div id="scriptures"></div>
-    <div id="map"></div>
-  </div>
 
-  <script type="text/javascript">
+    <script src="js/scriptures.js"></script>
 
-    let map;
-    let showLocation;
+    <script type="text/javascript">
+        let map;
+        let showLocation;
 
-    function initMap() {
-      map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 31.7683, lng: 35.2137 },
-          zoom: 8,
-      });
-    }
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 31.7683, lng: 35.2137 },
+                zoom: 8,
+            });
+        }
 
-    function ready(readyListener){
-      if (document.readyState !== "loading") {
-        readyListener();
-      } else {
-        document.addEventListener("DOMContentLoaded", readyListener);
-      }
-    }
+        function ready(readyListener) {
+            if (document.readyState !== "loading") {
+                readyListener();
+            } else {
+                document.addEventListener("DOMContentLoaded", readyListener);
+            }
+        }
 
-    ready(function () {
-      Scriptures.init(() => { Scriptures.onHashChanged(); });
-      showLocation = Scriptures.showLocation;
-      window.addEventListener("hashchange", Scriptures.onHashChanged);
-    });
-    
-  </script>
-
+        ready(function () {
+            Scriptures.init(() => { Scriptures.onHashChanged(); });
+            showLocation = Scriptures.showLocation;
+            window.addEventListener("hashchange", Scriptures.onHashChanged);
+        });
+    </script>
 </body>
-
 </html>
+
+
+
+
+
+
+
+

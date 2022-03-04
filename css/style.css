@@ -1,3 +1,8 @@
+/*Media Queries*/
+
+/*Grid Box*/
+
+
 html {
     width: 100%;
     height: 100%;
@@ -16,6 +21,13 @@ body {
 
 img {
     max-width: 100%;
+}
+
+.maplabel {
+    font-size: 12pt;
+    font-weight: 400;
+    color: #201000;
+    text-shadow: -1px -1px 0 #fff8f0, 1px -1px 0 #fff8f0, -1px 1px 0 #fff8f0, 1px 1px 0 #fff8f0;
 }
 
 #header {
