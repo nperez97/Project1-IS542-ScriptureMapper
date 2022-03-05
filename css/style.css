@@ -3,6 +3,7 @@ html {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    font-family: "Arial";
 }
 
 body {
@@ -63,7 +64,7 @@ img {
 
 #centerhead {
     display: flex;
-    flex: 1;
+    flex: 10;
     justify-content: center;
     font-weight: normal;
     text-align: center;
@@ -87,14 +88,6 @@ div.subtitle {
 }
 
 #scriptures {
-    min-width: 220px;
-    max-width: 440px;
-    flex: 1 1 30%;
-    height: 100%;
-    min-height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    border-right: 1px solid #aaa;
     position: relative;
 }
 
@@ -181,7 +174,7 @@ div.books a.chapter {
 }
 
 #header a:hover {
-    color: #d0d0ff;
+    color: #5b9fdb;
     text-decoration: underline;
 }
 
@@ -282,16 +275,44 @@ li.match {
     background-color: #ffffcc;
 }
 
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+  }
+
+.btn-primary {
+    color: #fff;
+    background-color: #428bca;
+    border-color: #357ebd;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active{
+    color: #fff;
+    background-color: #3276b1;
+    border-color: #285e8e;
+}
+
 
 /*Media Queries*/
 
-@media (max-width: 900px) {
-    #centerhead {
-        padding-right: 10em;
-    }
-}
 
-@media (max-width: 600px){
+/*Small*/
+@media screen and (max-width: 600px){
     #centerhead {
         padding-right: 1em;
     }
@@ -306,9 +327,17 @@ li.match {
     }
 }
 
-@media (min-width: 601px) {
+/*Medium*/
+@media screen and (max-width: 900px) {
+    #centerhead {
+        padding-right: 10em;
+    }
+}
+
+/*Large*/
+@media screen and (min-width: 601px) {
     #scriptures {
-        min-width: 220px;
+        min-width: 270px;
         max-width: 440px;
         flex: 1 1 30%;
         height: 100%;

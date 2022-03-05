@@ -33,7 +33,7 @@ const Scriptures = (function () {
      */
     const BOTTOM_PADDING = "<br /><br />";
     const CLASS_BOOKS = "books";
-    const CLASS_BUTTON = "btn";
+    const CLASS_BUTTON = "btn btn-primary";
     const CLASS_CHAPTER = "chapter";
     const CLASS_ICON = "material-icons";
     const CLASS_VOLUME = "volume";
