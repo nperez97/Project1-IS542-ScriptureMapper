@@ -36,15 +36,15 @@
     </div>
     <div id="content">
         <div id="scriptures">
-            <div id="scripNav1">Content</div>
-            <div id="scripNav2"></div>
+            <div id="scripNav1">Hello</div>
+            <div id="scripNav2">Content</div>
         </div>
         <div id="map"></div>
     </div>
 
     <script src="js/scriptures.js"></script>
-    <script>
-        $(function(){
+    <script type="text/javascript">
+        $(function() {
             //set up two click handlers
 
             // CONSTANTS
@@ -57,7 +57,7 @@
             const TRANSPARENT = 0;
 
             // PRIVATE VARIABLES
-            let visibleDiv = $("#scripNav1");
+            let visibleDiv = $("#scriptures");
             let invisibleDiv = $("#scripNav2");
 
             // HELPER METHODS

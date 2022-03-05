@@ -24,6 +24,7 @@
     showLocation, slice, split, status, text, title, tocName
 */
 
+
 const Scriptures = (function () {
     "use strict";
 
@@ -308,7 +309,7 @@ const Scriptures = (function () {
         let book = books[requestedBookId];
 
         // assign to navScrip
-        document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
+        document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = chapterHtml;
 
         document.querySelectorAll(".navheading").forEach(function (element) {
             element.innerHTML += `<div class="nextprev">${requestedNextPrevious}</div>`;
@@ -456,7 +457,7 @@ const Scriptures = (function () {
         if (book.numChapters <= 1) {
             navigateChapter(bookId, book.numChapters);
         } else {
-            document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+            document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = htmlDiv({
                 content: chaptersGrid(book),
                 id: DIV_SCRIPTURES_NAVIGATOR
             });
@@ -464,7 +465,9 @@ const Scriptures = (function () {
         }
     };
 
-    navigateChapter = function (bookId, chapter) {
+    navigateChapter = function (bookId, chapter, animationType) {
+        //add in what happens for each animation type
+
         requestedBookId = bookId;
         requestedChapter = chapter;
 
@@ -486,7 +489,7 @@ const Scriptures = (function () {
     };
 
     navigateHome = function (volumeId) {
-        document.getElementById(DIV_SCRIPTURES).innerHTML = htmlDiv({
+        document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = htmlDiv({
             content: volumesGridContent(volumeId),
             id: DIV_SCRIPTURES_NAVIGATOR
         });
@@ -565,9 +568,10 @@ const Scriptures = (function () {
                     navigateBook(bookId);
                 } else {
                     let chapter = Number(ids[2]);
+                    let animationType = ids[3]
 
                     if (bookChapterValid(bookId, chapter)) {
-                        navigateChapter(bookId, chapter);
+                        navigateChapter(bookId, chapter, animationType);
                     } else {
                         navigateHome();
                     }
