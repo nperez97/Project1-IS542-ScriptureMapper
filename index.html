@@ -21,25 +21,109 @@
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDlcvOj-1T67gF17fMGCIOsYqCAWH12Z7w&callback=initMap">
     </script>
     <script defer src="https://unpkg.com/@googlemaps/markerwithlabel/dist/index.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 </head>
 <body>
 
     <!-- Put content in container -->
-    <div id = "container">
-        <div id="header">
-            <div id="crumbs"></div>
-            <div id="centerhead">
-                <div class="title">The Scriptures, Mapped</div>
-                <div class="subtitle">By Nefi Perez</div>
-            </div>
+    <div id="header">
+        <div id="crumbs"></div>
+        <div id="centerhead">
+            <div class="title">The Scriptures, Mapped</div>
+            <div class="subtitle">By Nefi Perez</div>
         </div>
-        <div id="content">
-            <div id="scriptures"></div>
-            <div id="map"></div>
+    </div>
+    <div id="content">
+        <div id="scriptures">
+            <div id="scripNav1">Content</div>
+            <div id="scripNav2"></div>
         </div>
+        <div id="map"></div>
     </div>
 
     <script src="js/scriptures.js"></script>
+    <script>
+        $(function(){
+            //set up two click handlers
+
+            // CONSTANTS
+            const ANIMATION_DURATION = 350;
+            const ANIMATION_TYPE_SLIDE_LEFT = "left";
+            const ANIMATION_TYPE_SLIDE_RIGHT = "right";
+            const POSITION_BEHIND_MAP = "100%";
+            const POSITION_OFFSCREEN_LEFT = "-100%"
+            const OPAQUE = 1;
+            const TRANSPARENT = 0;
+
+            // PRIVATE VARIABLES
+            let visibleDiv = $("#scripNav1");
+            let invisibleDiv = $("#scripNav2");
+
+            // HELPER METHODS
+            const animateToNewContent = function (content, animationType) {
+                invisibleDiv.html(content);
+
+                if (animationType === ANIMATION_TYPE_SLIDE_LEFT){
+                    slideFromLeft();
+                } else if (animationType === ANIMATION_TYPE_SLIDE_RIGHT){
+                    slideFromRight();
+                } else {
+                    crossFade();
+                }
+            };
+
+            const swapDivs = function () {
+                let temp = visibleDiv;
+                
+                visibleDiv = invisibleDiv;
+                invisibleDiv = temp;
+            };
+
+            const populateContent = function() {
+                // jnsert get scriptures callback
+                invisibleDiv.text("hello")
+            };
+
+            const slideFromRight = function(){
+                populateContent();
+
+                // Make sure offscreen div in right spot
+                invisibleDiv.css({left: POSITION_BEHIND_MAP, opacity: OPAQUE});
+
+                //RUN animation
+                invisibleDiv.animate({left: POSITION_VISIBLE}, ANIMATION_DURATION);
+                visibleDiv.animate({left: POSITION_OFFSCREEN_LEFT}, ANIMATION_DURATION, swapDivs);
+            };
+
+            const slideFromLeft = function(){
+                // Make sure offscreen div in right spot
+                invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT, opacity: OPAQUE});
+
+                //RUN animation
+                invisibleDiv.animate({left: POSITION_VISIBLE}, ANIMATION_DURATION);
+                visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs);
+            };
+
+            // CLICK HANDLERS
+            visibleDiv.click(slideFromRight); //bring next chapter
+            invisibleDiv.click(slideFromLeft);
+
+            const crossFade = function(){
+                invisibleDiv.css({left: POSITION_VISIBLE, opacity: TRANSPARENT});
+
+                const hideIfTransparent = function(){
+                    swapDivs();
+
+                    invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT})
+                };
+
+                //cross fade
+                visibleDiv.animate({})
+            };
+
+        });
+    </script>
 
     <script type="text/javascript">
         let map;

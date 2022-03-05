@@ -2,6 +2,22 @@
 
 /*Grid Box*/
 
+.container {
+    position: relative;
+    width: 300px;
+    height: 500px;
+}
+
+.chapterVid {
+    background-color: #eee;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+
+}
+/*Important code above*/
 
 html {
     width: 100%;
@@ -100,7 +116,7 @@ div.subtitle {
     position: relative;
 }
 
-#scripnav {
+#scripnav, #scripNav1, #scripNav2 {
     position: absolute;
     max-height: 100%;
     overflow-x: hidden;

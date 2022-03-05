@@ -37,6 +37,8 @@ const Scriptures = (function () {
     const CLASS_ICON = "material-icons";
     const CLASS_VOLUME = "volume";
     const DIV_BREADCRUMBS = "crumbs";
+    const DIV_SCRIPTURES_NAV1 = "scripNav1";
+    const DIV_SCRIPTURES_NAV2 = "scripNav2";
     const DIV_SCRIPTURES_NAVIGATOR = "scripnav";
     const DIV_SCRIPTURES = "scriptures";
     const ICON_NEXT = "skip_next";
@@ -305,6 +307,7 @@ const Scriptures = (function () {
     getScripturesCallback = function (chapterHtml) {
         let book = books[requestedBookId];
 
+        // assign to navScrip
         document.getElementById(DIV_SCRIPTURES).innerHTML = chapterHtml;
 
         document.querySelectorAll(".navheading").forEach(function (element) {
@@ -521,9 +524,16 @@ const Scriptures = (function () {
     };
 
     nextPreviousMarkup = function (nextPrev, icon) {
+        //-------------
+        let animationType = "right";
+
+        if (icon === ICON_PREVIOUS){
+            animationType = "left";
+        }
+        //-----------------
         return htmlLink({
             content: htmlElement(TAG_SPAN, icon, CLASS_ICON),
-            href: `#0:${nextPrev[0]}:${nextPrev[1]}`,
+            href: `#0:${nextPrev[0]}:${nextPrev[1]}:${animationType}`,
             title: nextPrev[2]
         });
     };
