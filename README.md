@@ -1,10 +1,13 @@
-## Nefi Perez - IS 542
-I learned several things through the course of this project. I was able to both learn and reinforce some class concepts and also learn from some challenges that I faced in creating this project.
-
+## Nefi Perez - IS 542 - Project 2
 
 ### What I Learned:
-* IIFE: I have never really used IIFEs, and so using those on this project helped me better solidify in my mind how they work. Also, somewhat going along with this, using `=>` was good to practice since I had seen it before, but it always seemed more of an abstract concept in my mind and was/is still kind of hard for me to grasp and clearly see parallels of code that doesn't use it, but performs the same function.
-* Google Documentation: I learned a lot about the Map API and how to use methods that are provided to the Map and Marker classes that I could use in my code. (https://developers.google.com/maps/documentation/javascript/reference)
+* Media Queries: It was cool to see for myself how they work in making a website responsive to different device types. I had never really used them before, and so this project really helped me increase my understanding of them.
+* jQuery: I think we had briefly touched on jQuery in passing in IS 413. Learning how to use jQuery to animate was certainly new for me, and is something I hope to continue to learn more about so I can implement it's animation feature in future projects.
 
 ### What was Challenging:
-* Debugging: I knew to use the debugger and JSLint to help solve issues I ran into, but there were times were I had to spend a long time trying to find an error that wouldn't show up. I have now learned to be more aware of my spellings of when an 's' is included at the end. 
+* Connecting HTML Script Content to JS file. I spent a long time trying to figure out how to connect my code so that I could implement the nextContent() so that I could slide between chapters. After a long time, I decided to go with the cross fade since I think you mentioned in class, that was allowed too. 
+
+* I had also spent a long time trying to work with Grid for my CSS. I ran into weird issues when inserting content into parent divs, and after lots of spinning my wheels, I resorted to using flex, which seemed to be what you had originally in your project 1 starter code. 
+
+### Feedback from others:
+* Backbutton: Those who tested my site, like the breadcrumb navigation, but would have also liked a back arrow as well.
