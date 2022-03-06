@@ -43,9 +43,11 @@
     </div>
 
     <script src="js/scriptures.js"></script>
+    
     <script type="text/javascript">
         $(function() {
             //set up two click handlers
+            console.log("testing");
 
             // CONSTANTS
             const ANIMATION_DURATION = 350;
@@ -53,11 +55,12 @@
             const ANIMATION_TYPE_SLIDE_RIGHT = "right";
             const POSITION_BEHIND_MAP = "100%";
             const POSITION_OFFSCREEN_LEFT = "-100%"
+            const POSITION_VISIBLE = "0%"
             const OPAQUE = 1;
             const TRANSPARENT = 0;
 
             // PRIVATE VARIABLES
-            let visibleDiv = $("#scriptures");
+            let visibleDiv = $("#scripNav1");
             let invisibleDiv = $("#scripNav2");
 
             // HELPER METHODS
@@ -82,11 +85,12 @@
 
             const populateContent = function() {
                 // jnsert get scriptures callback
+                //console.log(Scriptures.getScripturesCallback())
                 invisibleDiv.text("hello")
             };
 
             const slideFromRight = function(){
-                populateContent();
+                //populateContent();
 
                 // Make sure offscreen div in right spot
                 invisibleDiv.css({left: POSITION_BEHIND_MAP, opacity: OPAQUE});
@@ -106,10 +110,17 @@
             };
 
             // CLICK HANDLERS
-            visibleDiv.click(slideFromRight); //bring next chapter
-            invisibleDiv.click(slideFromLeft);
+            visibleDiv.click(() => {
+                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_RIGHT)
+            });
+
+            invisibleDiv.click(() => {
+                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_LEFT)
+            });
 
             const crossFade = function(){
+                //populateContent();
+
                 invisibleDiv.css({left: POSITION_VISIBLE, opacity: TRANSPARENT});
 
                 const hideIfTransparent = function(){
@@ -145,7 +156,10 @@
         }
 
         ready(function () {
-            Scriptures.init(() => { Scriptures.onHashChanged(); });
+            Scriptures.init(() => { 
+                Scriptures.setScripDivs($('#scripNav1'), $('#scripNav2'))
+                Scriptures.onHashChanged(); 
+            });
             showLocation = Scriptures.showLocation;
             window.addEventListener("hashchange", Scriptures.onHashChanged);
         });

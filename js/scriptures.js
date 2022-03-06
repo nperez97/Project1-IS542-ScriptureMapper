@@ -71,10 +71,13 @@ const Scriptures = (function () {
     let books;
     let geoplaces = [];
     let gmMarkers = [];
+    let invisibleDiv;
     let requestedBookId;
     let requestedChapter;
     let requestedNextPrevious;
+    let visibleDiv;
     let volumes;
+    
 
     /*-------------------------------------------------------------------
      *                      PRIVATE METHOD DECLARATIONS
@@ -106,9 +109,11 @@ const Scriptures = (function () {
     let navigateChapter;
     let navigateHome;
     let nextChapter;
+    let nextContent;
     let nextPreviousMarkup;
     let onHashChanged;
     let previousChapter;
+    let setScripDivs;
     let setupMarkers;
     let showLocation;
     let titleForBookChapter;
@@ -309,7 +314,7 @@ const Scriptures = (function () {
         let book = books[requestedBookId];
 
         // assign to navScrip
-        document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = chapterHtml;
+        document.getElementById(DIV_SCRIPTURES_NAV2).innerHTML = chapterHtml;
 
         document.querySelectorAll(".navheading").forEach(function (element) {
             element.innerHTML += `<div class="nextprev">${requestedNextPrevious}</div>`;
@@ -320,7 +325,7 @@ const Scriptures = (function () {
     };
 
     getScripturesFailure = function () {
-        document.getElementById(DIV_SCRIPTURES).innerHTML = "Unable to retrieve chapter contents.";
+        document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = "Unable to retrieve chapter contents.";
         injectBreadcrumbs();
     };
 
@@ -457,7 +462,7 @@ const Scriptures = (function () {
         if (book.numChapters <= 1) {
             navigateChapter(bookId, book.numChapters);
         } else {
-            document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = htmlDiv({
+            document.getElementById(DIV_SCRIPTURES_NAV2).innerHTML = htmlDiv({
                 content: chaptersGrid(book),
                 id: DIV_SCRIPTURES_NAVIGATOR
             });
@@ -489,7 +494,7 @@ const Scriptures = (function () {
     };
 
     navigateHome = function (volumeId) {
-        document.getElementById(DIV_SCRIPTURES_NAV1).innerHTML = htmlDiv({
+        document.getElementById(DIV_SCRIPTURES_NAV2).innerHTML = htmlDiv({
             content: volumesGridContent(volumeId),
             id: DIV_SCRIPTURES_NAVIGATOR
         });
@@ -523,6 +528,14 @@ const Scriptures = (function () {
                     titleForBookChapter(nextBook, nextChapterValue)
                 ];
             }
+        }
+    };
+
+    nextContent = function(content, contentType) {
+        if (contentType === 'volume') {
+            return volumesGridContent(content)
+        } else if (contentType === 'book') {
+            return chaptersGrid(content)
         }
     };
 
@@ -603,6 +616,11 @@ const Scriptures = (function () {
             }
         }
     };
+
+    setScripDivs = function(div1, div2) {
+        visibleDiv = div1
+        invisibleDiv = div2
+    }
 
     setupMarkers = function () {
         if (gmMarkers.length > 0) {
@@ -707,6 +725,7 @@ const Scriptures = (function () {
     return {
         init,
         onHashChanged,
+        setScripDivs,
         showLocation
     };
 

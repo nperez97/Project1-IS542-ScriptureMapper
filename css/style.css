@@ -91,7 +91,7 @@ div.subtitle {
     position: relative;
 }
 
-#scripnav, #scripNav2 {
+#scripnav {
     position: absolute;
     max-height: 100%;
     overflow-x: hidden;
