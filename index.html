@@ -36,8 +36,8 @@
     </div>
     <div id="content">
         <div id="scriptures">
-            <div id="scripNav1">Hello</div>
-            <div id="scripNav2">Content</div>
+            <div class = "chapter" id="scripNav1"></div>
+            <div class = "chapter" id="scripNav2"></div>
         </div>
         <div id="map"></div>
     </div>
@@ -46,11 +46,9 @@
     
     <script type="text/javascript">
         $(function() {
-            //set up two click handlers
-            console.log("testing");
 
             // CONSTANTS
-            const ANIMATION_DURATION = 350;
+            const ANIMATION_DURATION = 200;
             const ANIMATION_TYPE_SLIDE_LEFT = "left";
             const ANIMATION_TYPE_SLIDE_RIGHT = "right";
             const POSITION_BEHIND_MAP = "100%";
@@ -60,7 +58,7 @@
             const TRANSPARENT = 0;
 
             // PRIVATE VARIABLES
-            let visibleDiv = $("#scripNav1");
+            let visibleDiv = $("#scripNav2");
             let invisibleDiv = $("#scripNav2");
 
             // HELPER METHODS
@@ -83,14 +81,8 @@
                 invisibleDiv = temp;
             };
 
-            const populateContent = function() {
-                // jnsert get scriptures callback
-                //console.log(Scriptures.getScripturesCallback())
-                invisibleDiv.text("hello")
-            };
 
             const slideFromRight = function(){
-                //populateContent();
 
                 // Make sure offscreen div in right spot
                 invisibleDiv.css({left: POSITION_BEHIND_MAP, opacity: OPAQUE});
@@ -109,28 +101,32 @@
                 visibleDiv.animate({left: POSITION_BEHIND_MAP}, ANIMATION_DURATION, swapDivs);
             };
 
+
             // CLICK HANDLERS
             visibleDiv.click(() => {
-                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_RIGHT)
+                animateToNewContent();
             });
 
-            invisibleDiv.click(() => {
-                animateToNewContent(nextContent(), ANIMATION_TYPE_SLIDE_LEFT)
+            // invisibleDiv.click(() => {
+            //     animateToNewContent();
+            // });
+
+            $("#crumbs").click(function () {
+                animateToNewContent();
             });
 
             const crossFade = function(){
-                //populateContent();
 
                 invisibleDiv.css({left: POSITION_VISIBLE, opacity: TRANSPARENT});
 
                 const hideIfTransparent = function(){
                     swapDivs();
-
                     invisibleDiv.css({left: POSITION_OFFSCREEN_LEFT})
                 };
 
-                //cross fade
-                visibleDiv.animate({})
+                //cross fade the divs
+                visibleDiv.animate({opacity: TRANSPARENT}, ANIMATION_DURATION)
+                invisibleDiv.animate({opacity: OPAQUE}, ANIMATION_DURATION, hideIfTransparent)
             };
 
         });

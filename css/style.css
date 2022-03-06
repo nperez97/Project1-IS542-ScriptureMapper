@@ -91,6 +91,14 @@ div.subtitle {
     position: relative;
 }
 
+/* .chapter {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+} */
+
 #scripnav {
     position: absolute;
     max-height: 100%;
@@ -98,6 +106,10 @@ div.subtitle {
     overflow-y: auto;
     width: 100%;
 }
+
+/* #scripNav2{
+    left: 0;
+} */
 
 #map {
     flex: 1 1 70%;

@@ -462,6 +462,7 @@ const Scriptures = (function () {
         if (book.numChapters <= 1) {
             navigateChapter(bookId, book.numChapters);
         } else {
+            //animateToNewContent(nextContent(book, 'book'));
             document.getElementById(DIV_SCRIPTURES_NAV2).innerHTML = htmlDiv({
                 content: chaptersGrid(book),
                 id: DIV_SCRIPTURES_NAVIGATOR
@@ -535,7 +536,12 @@ const Scriptures = (function () {
         if (contentType === 'volume') {
             return volumesGridContent(content)
         } else if (contentType === 'book') {
-            return chaptersGrid(content)
+            injectBreadcrumbs(volumeForId(book.parentBookId), book);
+
+            return htmlDiv({
+                content: chaptersGrid(content),
+                id: DIV_SCRIPTURES_NAVIGATOR
+            });
         }
     };
 
@@ -563,6 +569,7 @@ const Scriptures = (function () {
 
         if (ids.length <= 0) {
             navigateHome();
+            //go to volume grid
         } else if (ids.length === 1) {
             let volumeId = Number(ids[0]);
 
@@ -618,8 +625,8 @@ const Scriptures = (function () {
     };
 
     setScripDivs = function(div1, div2) {
-        visibleDiv = div1
-        invisibleDiv = div2
+        visibleDiv = div1;
+        invisibleDiv = div2;
     }
 
     setupMarkers = function () {
@@ -718,6 +725,7 @@ const Scriptures = (function () {
             }
         }
     };
+
 
     /*-------------------------------------------------------------------
      *                      PUBLIC API
