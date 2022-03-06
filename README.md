@@ -3,6 +3,7 @@
 ### What I Learned:
 * Media Queries: It was cool to see for myself how they work in making a website responsive to different device types. I had never really used them before, and so this project really helped me increase my understanding of them.
 * jQuery: I think we had briefly touched on jQuery in passing in IS 413. Learning how to use jQuery to animate was certainly new for me, and is something I hope to continue to learn more about so I can implement it's animation feature in future projects.
+* Flexbox: I learned how useful flexbox is with positioning in CSS compared to what I'm used to. I also learned how to use the `flex-direction` feature, which helped me make my content look nice as I stacked it in a column as the screen width gets smaller.
 
 ### What was Challenging:
 * Connecting HTML Script Content to JS file. I spent a long time trying to figure out how to connect my code so that I could implement the `nextContent()` so that I could slide between chapters. After a long time, I decided to go with the cross fade since I think you mentioned in class, that was allowed too. 
